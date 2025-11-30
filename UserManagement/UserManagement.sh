@@ -142,7 +142,7 @@ change_user_group() {
 
 # Main menu
 while true; do
-    echo "User Management Menu:"
+    echo "====== User Management Menu: ======"
     echo "1. Create a new user"
     echo "2. Grant root privileges to a user"
     echo "3. Delete a user account"

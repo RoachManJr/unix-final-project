@@ -1,7 +1,7 @@
 crontab_information(){
     echo "======== Schedule Backup ========";
     echo
-    echo "  Minute Frequency"
+    echo "-------- Minute Frequency -------"
     # ASK FOR THE MINUTES
     PS3="Please enter your choice "
     select min in "* (every minute)" "custom" "Exit"
@@ -36,7 +36,7 @@ crontab_information(){
             ;;
         "Exit")
             echo "Exiting..."
-            return
+            return 1
             ;;
         *)
             echo "Please choose between 1, 2, or 3"
@@ -46,7 +46,7 @@ crontab_information(){
 
     echo
     # ASK FOR THE HOURS
-    echo " Hour Frequency"
+    echo "--------- Hour Frequency --------"
     PS3="Please enter your choice "
     select hour in "* (every hour)" "custom" "Exit"
     do
@@ -79,7 +79,7 @@ crontab_information(){
             ;;
         "Exit")
              echo "Exiting..."
-            return
+            return 1
             ;;
         *)
             echo "Please choose between 1, 2, or 3"
@@ -89,7 +89,7 @@ crontab_information(){
 
     echo
     # ASK FOR THE DAY OF THE MONTH
-    echo " Day of the Month Frequency"
+    echo "--- Day of the Month Frequency --"
     PS3="Please enter your choice "
     select dayMonthChoice in "* (every day of the month)" "custom" "Exit"
     do
@@ -122,7 +122,7 @@ crontab_information(){
             ;;
         "Exit")
             echo "Exiting..."
-            return
+            return 1
             ;;
         *)
             echo "Invalid choice. Please choose between 1, 2, or 3 "
@@ -132,7 +132,7 @@ crontab_information(){
 
     echo
     # ASK FOR THE MONTH
-    echo " Month Frequency"
+    echo "-------- Month Frequency --------"
     PS3="Please enter your choice "
     select monthChoice in "* (every month)" "custom" "Exit"
     do
@@ -170,7 +170,7 @@ crontab_information(){
             ;;
         "Exit")
             echo "Exiting..."
-            return
+            return 1
             ;;
         *)
             echo "Invalid choice. Please choose between 1, 2, or 3 "
@@ -180,8 +180,8 @@ crontab_information(){
 
     echo
     # ASK FOR THE DAY OF THE WEEK
-    echo " Day of the Week Frequency"
-    PS3="Please enter your choice "
+    echo "--- Day of the Week Frequency ---"
+    PS3="Please enter your choice: "
     select dayChoice in "* (every day)" "custom" "Exit"
     do
         case $dayChoice in
@@ -191,7 +191,7 @@ crontab_information(){
             break
             ;;
         "custom")
-            PS3="Please select a day of the week "
+            PS3="Please select a day of the week: "
             select day in Monday Tuesday Wednesday Thursday Friday Saturday Sunday
             do
                 case $day in
@@ -202,7 +202,7 @@ crontab_information(){
                     Friday) dayOfWeek=5 ;;
                     Saturday) dayOfWeek=6 ;;
                     Sunday) dayOfWeek=0 ;;
-                    *)echo "Invalid input. Please select a number between 1-7 "
+                    *)echo "Invalid input. Please select a number between 1-7: "
                         continue
                         ;;
                 esac
@@ -213,21 +213,21 @@ crontab_information(){
             ;;
         "Exit")
             echo "Exiting..."
-            return
+            return 1
             ;;
         *)
-            echo "Invalid choice. Please choose between 1, 2, or 3 "
+            echo "Invalid choice. Please choose between 1, 2, or 3: "
             ;;
         esac
     done
+    echo
 }
 
 asking_forDestination(){
-    echo
     #ASK FOR FULL PATH OF THE FILE OR FOLDER THE USER WANT TO BACKUP
     while true;
     do
-        read -p "Please enter the full path directory of the file you wish to backup: " fileToBackup
+        read -p "Please enter the full path directory of the file/folder you wish to backup: " fileToBackup
 
         # Validate if the file exists
         if [ -e "$fileToBackup" ];
@@ -235,7 +235,8 @@ asking_forDestination(){
             echo "file path: $fileToBackup"
             break
         else
-            echo "Error: File/folder not found! Please try again"
+            echo "Error: File/folder not found!"
+            return 1
         fi
     done
 
@@ -246,12 +247,13 @@ asking_forDestination(){
         read -p "Please enter the full path of the destination directory: " backupDirectory
 
         # Validate the directory exists
-        if [ -e "$backupDirectory" ];
+        if [ -d "$backupDirectory" ];
         then
-            echo "destination path: $backupDirectory"
+            echo "Destination path: $backupDirectory"
             break
         else
-            echo "Error: File path not found!"
+            echo "Error: Directory path not found!"
+            return 1
         fi
     done
     echo
@@ -259,7 +261,6 @@ asking_forDestination(){
 
 
 create_backup(){
-
     echo "======== Creating Backup Job ========"
     echo " Backup Frequency Summary"
     echo " Minute: $minOfDay"
@@ -273,7 +274,7 @@ create_backup(){
 
     while true;
     do
-        read -p "Do you wish to backup your file at the specified frequency? Y/N " answer
+        read -p "Do you wish to backup your file at the specified frequency? Y/N: " answer
 
         if [ "$answer" == "Y" ] || [ "$answer" == "y" ];
         then
@@ -289,7 +290,7 @@ create_backup(){
             #creating the crontab, and then append new crontab to old crontab
             (crontab -l 2>/dev/null; echo "$cron_entry") | crontab -
 
-            #built in variable for confirming if a action was successful
+            #confirming if the previous command was successful
             if [ $? -eq 0 ];
             then
                 echo "Crontab created successfully!"
@@ -303,16 +304,20 @@ create_backup(){
             echo "Backup cancelled."
             return
         else
-            echo "Invalid input. Please enter Y or N."
+            echo "Invalid input. Please enter Y/y or N/n: "
         fi
     done
+    echo
 }
 
 
 show_lastBackup(){
 
-    echo
     echo "======== Last Backup ========"
+
+    read -p "Please enter the full path of the backup directory: " backupDir
+    logfile="${backupDir}/backup.log"
+
     #check if a regular file exists
     if [ -f "$logfile" ];
     then
@@ -322,10 +327,41 @@ show_lastBackup(){
     else
         echo "no file backup yet"
     fi
+    echo
 }
 
 
-crontab_information
-asking_forDestination
-create_backup
-show_lastBackup
+while true; 
+do
+    echo "==== Backup Management Menu ===="
+    echo "1. Create a schedule backup"
+    echo "2. Check last backup"
+    echo "3. Exit"
+
+    read -p "Please choose an option: " choice
+    case $choice in
+        1) 
+            echo
+            crontab_information
+            if [ $? -eq 0 ];
+            then
+                asking_forDestination
+                if [ $? -eq 0 ];
+                then
+                    create_backup
+                fi
+            fi
+            ;;
+        2)
+            show_lastBackup
+            ;;
+        3)
+            echo "Exiting..."
+            break
+            ;;
+        *) 
+            echo "Invalid input. Please try again."
+            ;;
+    esac
+    echo
+done
