@@ -16,7 +16,7 @@ crontab_information(){
             while true;
             do
                 read -p "Please enter minute (0-59) " customMin
-                #check if not matches the specified regular expression
+                # check if not matches the specified regular expression
                 if ! [[ "$customMin" =~ ^[0-9]+$ ]];
                 then
                     echo "Invalid input. Please enter a number "
@@ -224,12 +224,12 @@ crontab_information(){
 }
 
 asking_forDestination(){
-    #ASK FOR FULL PATH OF THE FILE OR FOLDER THE USER WANT TO BACKUP
+    # ASK FOR FULL PATH OF THE FILE OR FOLDER THE USER WANT TO BACKUP
     while true;
     do
         read -p "Please enter the full path directory of the file/folder you wish to backup: " fileToBackup
 
-        # Validate if the file exists
+        # Validate if the file/folder exists
         if [ -e "$fileToBackup" ];
         then
             echo "file path: $fileToBackup"
@@ -278,19 +278,19 @@ create_backup(){
 
         if [ "$answer" == "Y" ] || [ "$answer" == "y" ];
         then
-            #location of the logging file
+            # location of the logging file
             logfile="${backupDirectory}/backup.log"
 
-            #backup command line and assign the date and time into the logging file
+            # backup command line and assign the date and time into the logging file
             backup_cmd="tar -czf ${backupDirectory}/backup_\$(date +\%Y\%m\%d_\%H\%M\%S).tar.gz ${fileToBackup} && echo \"backup file: \$(date)\" >> ${logfile}"
 
-            #crontab frequency
+            # crontab frequency
             cron_entry="$minOfDay $hourOfDay $dayOfMonth $month $dayOfWeek $backup_cmd"
 
-            #creating the crontab, and then append new crontab to old crontab
+            # Read existing crontab, append new entry, then replace entire crontab
             (crontab -l 2>/dev/null; echo "$cron_entry") | crontab -
 
-            #confirming if the previous command was successful
+            # confirming if the previous command was successful
             if [ $? -eq 0 ];
             then
                 echo "Crontab created successfully!"
@@ -314,11 +314,10 @@ create_backup(){
 show_lastBackup(){
 
     echo "======== Last Backup ========"
-
     read -p "Please enter the full path of the backup directory: " backupDir
     logfile="${backupDir}/backup.log"
 
-    #check if a regular file exists
+    # check if a regular file exists
     if [ -f "$logfile" ];
     then
         # Read the last line of the log file
