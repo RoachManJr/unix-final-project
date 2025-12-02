@@ -426,7 +426,87 @@ case $option in
 		;;
 	3) 
 
-		echo "this is the networl management";;
+		while true; do
+			PS3="Please select an operation: "
+			select cnt in DisplayNetworkInterfaces EnableOrDisableNetworkInterface IPAddressAssignment DisplayAvailableWiFiNetworks Exit
+			do
+			case $cnt in
+				DisplayNetworkInterfaces)
+					for interface in $(ls /sys/class/net/); do
+						ip_address=$(ip -o -4 addr show $interface | awk '{print $4}')
+						gateway=$(ip route show default dev $interface | awk '/default/ {print $3}')
+						if [ -n "$ip_address" ]; then
+							echo -n "Interface: $interface, IP Address: $ip_address"
+							if [ -n "$gateway" ]; then
+								echo ". Gateway: $gateway"
+							else
+								echo ", No Default Gateway"
+							fi
+						else
+							echo "Interface: $interface, No IP Address assigned"
+						fi
+					done
+					echo ""
+					break 1
+					;;
+				EnableOrDisableNetworkInterface)
+					PS3="Would you like to enable or disable a network interface? 1 for Enable, 2 for Disable: "
+					while true; do
+						select choice in Enable Disable Return
+						do
+						case $choice in
+							Enable)
+							read -p "Please enter the name of the network interface you would like to enable " interfaceName
+							sudo ip link set "$interfaceName" up
+							echo ""
+							break 1
+							;;
+							Disable)
+							read -p "Please enter the name of the network interface you would like to disable " interfaceName
+							sudo ip link set "$interfaceName" down
+							echo ""
+							break 1
+							;;
+							Return)
+							echo "Returning to Network Management Menu"
+							echo ""
+							break 2
+							;; 
+							*)
+							echo "Invalid"
+							;;
+						esac
+						done
+					done
+					echo ""
+					break 1
+					;;
+				IPAddressAssignment)
+					read -p "Enter the Interface you want to assign an IP Address to: " interfaceName
+					read -p "Enter the IP Address you want to assign to that Interface: " ipAddress
+					sudo ip addr add $ipAddress dev $interfaceName
+					echo ""
+					break 1
+					;;
+				DisplayAvailableWiFiNetworks)
+					nmcli device wifi list
+					read -p "Enter the name of the network you would like to connect to: " network
+					read -p "Enter the password of that network: " passwordInput
+					nmcli device wifi connect $network password $passwordInput
+					echo ""
+					break 1
+					;;
+				Exit)
+					echo "Goodbye"
+					break 2
+					;;
+				*)
+					echo "Invalid"
+					;;
+			esac
+			done
+		done
+
 	4)
 		    echo -e "\e[1;97;45m     SERVICE MANAGEMENT                          \e[0m"
 		    echo -e "\e[97;40m Chose an option from 1 to 4                     \e[0m  "
@@ -643,44 +723,56 @@ case $option in
 		echo "this is the user management";;
 	6)
 		echo -e "\e[1;97;45m     File Management     \e[0m"
-		PS3=" Please select an operation: "
-		select cnt in FindFile LargestTen OldestTen Exit
-		do
-		case $cnt in
-		FindFile)
-		read -p "Enter username: " userName
-		read -p "Enter file name: " fileName
+		PS3="Please select an operation: "
 
-		if getent passwd "$userName" >/dev/null 2>&1; then
-			filePath="/home/$userName/$fileName"
-			if [ -f "$filePath" ]; then
-				full=$(realpath "$filePath")
-				echo "Full path is: $full"
-			else
-				echo "File does not exist"
-			fi
-		else
-			echo "User does not exist"
-		fi
-		;;
-		LargestTen)
-		echo "Here are the ten largest files in your home directory"
+		while true; do
+			select cnt in FindFile LargestTen OldestTen Exit
+			do
+			case $cnt in
+				FindFile)
+					read -p "Enter username: " userName
+					read -p "Enter file name: " fileName
 
-		du -a -h "$HOME" | sort -rh | head -n 10
-		;;
-		OldestTen)
-		echo "Here are the ten oldest files in your home directory"
+					if getent passwd "$userName" >/dev/null 2>&1; then
+						filePath="/home/$userName/$fileName"
+						if [ -f "$filePath" ]; then
+							full=$(realpath "$filePath")
+							echo "Full path is: $full"
+							echo ""
+						else
+							echo "File does not exist"
+							echo ""
+						fi
+					else
+						echo "User does not exist"
+						echo ""
+					fi
+					break
+					;;
+				LargestTen)
+					echo "Here are the ten largest files in your home directory"
 
-		find "$HOME" -type f -printf "%T@ %TY-%Tm-%Td %TH:%TM %p\n" | sort -n | head -n 10 | awk '{timestamp=$2" "$3; $1=""; $2=""; $3=""; print timestamp, $0}'
-		;;
-		Exit)
-		echo "Goodbye"
-		break
-		;;
-		*)
-		echo "Invalid Option"
-		esac
+					du -a -h "$HOME" | sort -rh | head -n 10
+					echo ""
+					break
+					;;
+				OldestTen)
+					echo "Here are the ten oldest files in your home directory"
+
+					find "$HOME" -type f -printf "%T@ %TY-%Tm-%Td %TH:%TM %p\n" | sort -n | head -n 10 | awk '{timestamp=$2" "$3; $1=""; $2=""; $3=""; print timestamp, $0}'
+					echo ""
+					break
+					;;
+				Exit)
+				echo "Goodbye"
+				break 2
+				;;
+				*)
+				echo "Invalid Option"
+			esac
+			done
 		done
+
 
 		;;
 	7)
