@@ -443,7 +443,7 @@ case $option in
 						if [ -n "$ip_address" ]; then
 							echo -n "Interface: $interface, IP Address: $ip_address"
 							if [ -n "$gateway" ]; then
-								echo ". Gateway: $gateway"
+								echo ", Gateway: $gateway"
 							else
 								echo ", No Default Gateway"
 							fi
@@ -775,6 +775,7 @@ case $option in
 				;;
 				*)
 				echo "Invalid Option"
+				;;
 			esac
 			done
 		done
