@@ -1,6 +1,8 @@
 
 while true
 do
+echo "   "
+echo "   "
 echo -e "\e[1;44;97m             MAIN MENU              \e[0m"
 echo -e "\e[97;40m       1) System Status             \e[0m  "
 echo -e "\e[97;40m       2) Backup Management         \e[0m "
@@ -10,8 +12,10 @@ echo -e "\e[97;40m       5) User Management           \e[0m    "
 echo -e "\e[97;40m       6) File Management           \e[0m   "
 echo -e "\e[91;40m       7) EXIT                      \e[0m   "
 
-read -p " Enter the option   : " option
-
+read -p $'\e[100;96m Enter the option   : \e[0m  ' option
+echo  "      "
+echo "  "
+echo "   "
 case $option in
 		1)
 			while true ; do
@@ -22,7 +26,7 @@ case $option in
 			echo -e "\e[97;40m3) List all active system processes (use the key q for exiting)\e[0m "
 			echo -e "\e[97;40m4) Terminate an active program with the PID                    \e[0m"
 			echo -e "\e[97;40m5) Main Menu                                                   \e[0m "
-			read -p "option : "  option 
+			read -p $'\e[100;96moption : \e[0m'  option 
 			echo " "
 				case $option in
 					1)
@@ -427,6 +431,7 @@ case $option in
 	3) 
 
 		while true; do
+			echo -e "\e[1;97;45m       NETWORK MANAGEMENT       \e[0m"
 			PS3="Please select an operation: "
 			select cnt in DisplayNetworkInterfaces EnableOrDisableNetworkInterface IPAddressAssignment DisplayAvailableWiFiNetworks Exit
 			do
@@ -506,6 +511,7 @@ case $option in
 			esac
 			done
 		done
+		;;
 
 	4)
 		    echo -e "\e[1;97;45m     SERVICE MANAGEMENT                          \e[0m"
@@ -528,13 +534,13 @@ case $option in
 		        2)
 		            read -p "Enter service name : " service
 		            sudo systemctl start "$service"
-		            echo "$service started"
+		            
 		            ;;
 		        3)
 		            read -p "Enter service name : " service
 		         
 		                sudo systemctl stop "$service"
-		                echo "$service stopped"
+		                
 		            
 		            ;;
 		        4)
